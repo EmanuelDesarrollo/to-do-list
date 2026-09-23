@@ -23,7 +23,6 @@ Desarrollada como prueba técnica para el cargo de Desarrollador Mobile Ionic. E
 
 ## Demo
 
-<!-- TODO: tomar las capturas y guardarlas en docs/screenshots/ con estos nombres. -->
 
 | Tareas (claro) | Tareas (oscuro) | Nueva tarea | Categorías |
 | :---: | :---: | :---: | :---: |
@@ -35,14 +34,14 @@ Desarrollada como prueba técnica para el cargo de Desarrollador Mobile Ionic. E
 
 **Feature flags en tiempo real** (cambio en la consola de Firebase reflejado en la app sin reiniciar):
 
-<!-- TODO: agregar el video o GIF de la demo del feature flag. -->
 ![Demo de Remote Config](docs/screenshots/remote-config-demo.gif)
 
-**Descargas:**
+**Descargas** ([ver release v1.0](https://github.com/EmanuelDesarrollo/to-do-list/releases/tag/v1.0)):
 
-<!-- TODO: agregar los enlaces de descarga del APK y el IPA (GitHub Releases) al generar los ejecutables. -->
-- APK (Android): _pendiente_
-- IPA (iOS): _pendiente_
+- APK (Android): [appToDoTask-v1.0.apk](https://github.com/EmanuelDesarrollo/to-do-list/releases/download/v1.0/appToDoTask-v1.0.apk)
+- IPA (iOS): [appToDoTask-v1.0.ipa](https://github.com/EmanuelDesarrollo/to-do-list/releases/download/v1.0/appToDoTask-v1.0.ipa)
+
+> El IPA está firmado con una cuenta gratuita de Apple (no se cuenta con Apple Developer Program), por lo que solo se instala en el dispositivo registrado. Para instalarlo en otro iPhone debe re-firmarse con un Apple ID propio o con un certificado de desarrollador.
 
 ---
 
@@ -276,11 +275,6 @@ Para probar la paginación con volumen, la app puede insertar 500 tareas de prue
    ```
 
 La inserción es idempotente: si ya existen tareas de prueba, no se duplican. Para eliminarlas, desinstala la app del emulador.
-
-### Generar APK e IPA
-
-<!-- TODO: documentar los pasos de firma y exportación al generar los ejecutables. -->
-_Pendiente._
 
 ---
 
