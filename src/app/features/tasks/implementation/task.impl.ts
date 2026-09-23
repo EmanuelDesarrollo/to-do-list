@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SqliteService } from '../../../core/database/sqlite.service';
 import { NewTask, Task } from '../domain/models/task.model';
-import { TaskFilter, TaskRepository } from '../domain/repositories/task.interface';
+import { TaskFilter, TaskPage, TaskRepository } from '../domain/repositories/task.interface';
 
 interface TaskRow {
   id: number;
@@ -18,7 +18,7 @@ interface TaskRow {
 export class TaskSqliteRepository implements TaskRepository {
   private readonly sqliteService = inject(SqliteService);
 
-  async getByFilter(filter: TaskFilter): Promise<Task[]> {
+  async getByFilter(filter: TaskFilter, page: TaskPage): Promise<Task[]> {
     const db = await this.sqliteService.getConnection();
 
     // Los filtros se resuelven en SQL (no con .filter() en memoria) para traer solo las filas
@@ -46,7 +46,13 @@ export class TaskSqliteRepository implements TaskRepository {
     // El orden también se delega a SQLite. 'pendingFirst' ordena primero por completada (0 antes que 1)
     // y luego por fecha; ambas cláusulas son literales fijas, nunca texto del usuario.
     const orderBy = filter.order === 'pendingFirst' ? 'completada ASC, fecha_creacion DESC' : 'fecha_creacion DESC';
-    const result = await db.query(`SELECT * FROM tareas ${where} ORDER BY ${orderBy};`, params);
+    // Paginación: solo se lee la ventana pedida. Los índices de fecha/estado permiten que SQLite
+    // recorra el índice ya ordenado y se detenga al llegar a LIMIT, sin ordenar toda la tabla.
+    const result = await db.query(`SELECT * FROM tareas ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?;`, [
+      ...params,
+      page.limit,
+      page.offset,
+    ]);
     return this.mapRows(result.values);
   }
 

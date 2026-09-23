@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 
+import { environment } from '../../../environments/environment';
+import { seedDemoTasks } from './dev-seed';
+
 const DATABASE_NAME = 'todo_list_db';
 const DATABASE_VERSION = 1;
 
@@ -39,10 +42,16 @@ export class SqliteService {
 
     await this.createSchema(this.connection);
 
+    if (environment.seedDemoTasks) {
+      await seedDemoTasks(this.connection);
+    }
+
     return this.connection;
   }
 
   private async createSchema(connection: SQLiteDBConnection): Promise<void> {
+    // idx_tareas_fecha e idx_tareas_estado_fecha cubren los ORDER BY paginados de la lista:
+    // 'recent' (fecha_creacion) y 'pendingFirst' / filtro por estado (completada, fecha_creacion).
     const schema = `
       CREATE TABLE IF NOT EXISTS categorias (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,6 +69,8 @@ export class SqliteService {
       );
 
       CREATE INDEX IF NOT EXISTS idx_tareas_categoria ON tareas(categoria_id);
+      CREATE INDEX IF NOT EXISTS idx_tareas_fecha ON tareas(fecha_creacion);
+      CREATE INDEX IF NOT EXISTS idx_tareas_estado_fecha ON tareas(completada, fecha_creacion);
     `;
 
     await connection.execute(schema);

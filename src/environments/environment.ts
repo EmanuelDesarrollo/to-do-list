@@ -3,7 +3,9 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  // Inserta 500 tareas de prueba sin categoría al abrir la app.
+  seedDemoTasks: false, // Inactivamos y cuando necesitemos task activamos.
 };
 
 /*

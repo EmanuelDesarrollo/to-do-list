@@ -16,6 +16,12 @@ export interface TaskFilter {
   order: TaskOrder;
 }
 
+// Ventana de resultados a traer: se pagina para no cargar toda la tabla en memoria.
+export interface TaskPage {
+  limit: number;
+  offset: number;
+}
+
 /**
  * Contrato que debe cumplir cualquier fuente de datos de tareas (SQLite, memoria, etc).
  *
@@ -24,7 +30,7 @@ export interface TaskFilter {
  * como llave de inyección, sin necesidad de un InjectionToken ni de importar Angular aquí.
  */
 export abstract class TaskRepository {
-  abstract getByFilter(filter: TaskFilter): Promise<Task[]>;
+  abstract getByFilter(filter: TaskFilter, page: TaskPage): Promise<Task[]>;
   abstract countPending(): Promise<number>;
   abstract create(task: NewTask): Promise<Task>;
   abstract update(task: Task): Promise<void>;

@@ -6,6 +6,9 @@ import {
   IonFabButton,
   IonHeader,
   IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  InfiniteScrollCustomEvent,
   IonLabel,
   IonList,
   IonSegment,
@@ -28,6 +31,9 @@ import { NewTask, Task } from '../../domain/models/task.model';
 import { TaskCategoryFilter, TaskFilter, TaskRepository, TaskStatusFilter } from '../../domain/repositories/task.interface';
 import { TaskFormComponent } from '../task-form/task-form.component';
 
+// Tareas por página: suficiente para llenar la pantalla con margen, sin cargar toda la tabla.
+const PAGE_SIZE = 30;
+
 // Chip de categoría seleccionado: 'all', 'none' (sin categoría) o el id de una categoría.
 type CategoryKey = 'all' | 'none' | number;
 
@@ -40,6 +46,8 @@ type CategoryKey = 'all' | 'none' | number;
     IonToolbar,
     IonContent,
     IonList,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
     IonFab,
     IonFabButton,
     IonIcon,
@@ -68,6 +76,12 @@ export class TaskListPage implements ViewWillEnter {
   readonly loading = signal(true);
   readonly status = signal<TaskStatusFilter>('all');
   readonly categoryKey = signal<CategoryKey>('all');
+  // false cuando la última página trajo menos de PAGE_SIZE filas: ya no hay más que pedir.
+  readonly hasMore = signal(false);
+
+  // Identifica la consulta más reciente. Si los filtros cambian mientras otra consulta sigue en curso,
+  // su respuesta (ya obsoleta) se descarta en lugar de pisar la lista nueva.
+  private requestId = 0;
 
   readonly subtitle = computed(() => {
     const count = this.pendingCount();
@@ -86,7 +100,7 @@ export class TaskListPage implements ViewWillEnter {
       // untracked: loadTasks lee otros filtros que no deben disparar este effect.
       untracked(() => {
         if (!this.loading()) {
-          this.loadTasks();
+          this.refreshTasks();
         }
       });
     });
@@ -100,9 +114,12 @@ export class TaskListPage implements ViewWillEnter {
     const key = this.categoryKey();
     if (typeof key === 'number' && !this.categories().some((category) => category.id === key)) {
       this.categoryKey.set('all');
+      await this.loadTasks();
+      return;
     }
 
-    await this.loadTasks();
+    // Al volver a la pestaña se conservan las páginas ya cargadas (y la posición del scroll).
+    await this.refreshTasks();
   }
 
   categoryOf(categoryId: number | null): Category | undefined {
@@ -123,7 +140,7 @@ export class TaskListPage implements ViewWillEnter {
     const data = await this.openForm();
     if (data) {
       await this.taskRepository.create(data);
-      await this.loadTasks();
+      await this.refreshTasks();
       await this.presentToast('Tarea creada');
     }
   }
@@ -132,14 +149,14 @@ export class TaskListPage implements ViewWillEnter {
     const data = await this.openForm(task);
     if (data) {
       await this.taskRepository.update({ ...task, ...data });
-      await this.loadTasks();
+      await this.refreshTasks();
       await this.presentToast('Tarea actualizada');
     }
   }
 
   async onToggleComplete(task: Task): Promise<void> {
     await this.taskRepository.setCompleted(task.id, !task.completed);
-    await this.loadTasks();
+    await this.refreshTasks();
   }
 
   async onDeleteTask(task: Task): Promise<void> {
@@ -154,13 +171,29 @@ export class TaskListPage implements ViewWillEnter {
           role: 'destructive',
           handler: async () => {
             await this.taskRepository.delete(task.id);
-            await this.loadTasks();
+            await this.refreshTasks();
             await this.presentToast('Tarea eliminada');
           },
         },
       ],
     });
     await alert.present();
+  }
+
+  /** Infinite scroll: trae la siguiente página a partir de las filas ya cargadas. */
+  async onLoadMore(event: InfiniteScrollCustomEvent): Promise<void> {
+    const requestId = this.requestId;
+    const page = await this.taskRepository.getByFilter(this.currentFilter(), {
+      limit: PAGE_SIZE,
+      offset: this.tasks().length,
+    });
+
+    // Si mientras tanto cambió un filtro o se refrescó la lista, esta página ya no aplica.
+    if (requestId === this.requestId) {
+      this.tasks.update((tasks) => [...tasks, ...page]);
+      this.hasMore.set(page.length === PAGE_SIZE);
+    }
+    await event.target.complete();
   }
 
   private async openForm(task?: Task): Promise<NewTask | null> {
@@ -180,19 +213,43 @@ export class TaskListPage implements ViewWillEnter {
     return role === 'save' ? data : null;
   }
 
+  /** Primera página: al entrar o al cambiar un filtro. */
   private async loadTasks(): Promise<void> {
-    const filter: TaskFilter = {
+    await this.fetchTasks(PAGE_SIZE);
+  }
+
+  /**
+   * Tras crear/editar/eliminar/marcar, vuelve a consultar solo las filas que ya estaban cargadas.
+   * Así el orden queda correcto (p. ej. la tarea completada baja con el flag completedLast)
+   * sin reordenar a mano en memoria y sin perder las páginas que el usuario ya recorrió.
+   */
+  private async refreshTasks(): Promise<void> {
+    await this.fetchTasks(Math.max(this.tasks().length, PAGE_SIZE));
+  }
+
+  private async fetchTasks(limit: number): Promise<void> {
+    const requestId = ++this.requestId;
+    const [tasks, pendingCount] = await Promise.all([
+      this.taskRepository.getByFilter(this.currentFilter(), { limit, offset: 0 }),
+      this.taskRepository.countPending(),
+    ]);
+
+    // Una consulta más nueva ya está en curso (el usuario cambió de filtro): se descarta esta respuesta.
+    if (requestId !== this.requestId) {
+      return;
+    }
+    this.tasks.set(tasks);
+    this.hasMore.set(tasks.length === limit);
+    this.pendingCount.set(pendingCount);
+    this.loading.set(false);
+  }
+
+  private currentFilter(): TaskFilter {
+    return {
       category: this.buildCategoryFilter(this.categoryKey()),
       status: this.status(),
       order: this.featureFlags.completedLast() ? 'pendingFirst' : 'recent',
     };
-    const [tasks, pendingCount] = await Promise.all([
-      this.taskRepository.getByFilter(filter),
-      this.taskRepository.countPending(),
-    ]);
-    this.tasks.set(tasks);
-    this.pendingCount.set(pendingCount);
-    this.loading.set(false);
   }
 
   private buildCategoryFilter(key: CategoryKey): TaskCategoryFilter {

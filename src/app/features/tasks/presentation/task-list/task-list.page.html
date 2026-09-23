@@ -35,13 +35,18 @@
         isUnfiltered() ? 'Agrega tu primera tarea para empezar a organizarte.' : 'Ajusta los filtros o crea una nueva tarea.'
       " actionLabel="Agregar tarea" (action)="onAddTask()"></app-empty-state>
   } @else {
-  <!-- @for con track por id: Angular solo re-renderiza las filas que cambian al recargar desde SQLite. -->
+  <!-- @for con track por id: al refrescar o agregar una página, Angular solo crea/destruye las filas que cambian. -->
   <ion-list lines="none">
     @for (task of tasks(); track task.id) {
     <app-task-card [task]="task" [category]="categoryOf(task.categoryId)" (toggleComplete)="onToggleComplete(task)"
       (edit)="onEditTask(task)" (remove)="onDeleteTask(task)"></app-task-card>
     }
   </ion-list>
+
+  <!-- Pide la siguiente página a SQLite al acercarse al final; se desactiva cuando no hay más filas. -->
+  <ion-infinite-scroll [disabled]="!hasMore()" (ionInfinite)="onLoadMore($event)">
+    <ion-infinite-scroll-content loadingSpinner="crescent"></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
   }
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
