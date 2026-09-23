@@ -18,11 +18,15 @@ ion-segment {
   --background: var(--app-surface);
   border-radius: 999px;
   padding: 4px;
+  // En Android (modo md) el segmento dentro de un toolbar hereda su altura mínima (56px).
+  min-height: 0;
 }
 
 ion-segment-button {
   --indicator-color: var(--ion-color-primary);
   --indicator-box-shadow: none;
+  // En modo md el indicador es una barra de 2px; se estira para que sea la píldora completa, igual que en iOS.
+  --indicator-height: 100%;
   --color: var(--app-muted);
   --color-checked: var(--ion-color-primary-contrast);
   --border-radius: 999px;
@@ -35,6 +39,12 @@ ion-segment-button {
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0;
+  // md agrega line-height: 40px al botón y margin: 12px 0 al label; se igualan a iOS.
+  line-height: normal;
+
+  ion-label {
+    margin: 0;
+  }
 
   &::part(indicator) {
     height: 100%;

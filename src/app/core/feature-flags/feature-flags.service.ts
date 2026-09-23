@@ -46,9 +46,9 @@ export class FeatureFlagsService {
       await FirebaseRemoteConfig.setDefaults({
         defaults: { [FLAG_KEYS.completedLast]: false, [FLAG_KEYS.categoryFromTask]: false },
       });
-      // Trae valores de la consola si los guardados tienen más de 1200 segundos (20 min).
+      // Verifica pasado 1 minuto ya que la configuración esta en segundos.
       await FirebaseRemoteConfig.fetchConfig({
-        minimumFetchIntervalInSeconds: 1200,
+        minimumFetchIntervalInSeconds: 60,
       });
       // Activa lo traído por fetchConfig para que getBoolean lo devuelva.
       await FirebaseRemoteConfig.activate();

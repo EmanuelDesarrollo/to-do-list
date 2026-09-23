@@ -109,6 +109,8 @@ ion-modal.app-sheet {
       --padding-end: 14px;
       --padding-top: 12px;
       --padding-bottom: 12px;
+      // En Android (md) ion-input dibuja una barra de foco de 2px; el foco ya lo marca el borde de .app-field.
+      --highlight-height: 0;
       min-height: 0;
       font-size: 15px;
     }
