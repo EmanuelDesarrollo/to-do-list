@@ -15,11 +15,11 @@ import {
   IonSegmentButton,
   IonToolbar,
   ModalController,
-  ToastController,
   ViewWillEnter,
 } from '@ionic/angular';
 
 import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
+import { FeedbackService } from '../../../../core/feedback/feedback.service';
 import { Category } from '../../../categories/domain/models/category.model';
 import { CategoryRepository } from '../../../categories/domain/repositories/category.interface';
 import { AppHeaderComponent } from '../../../../shared/components/app-header/app-header.component';
@@ -66,11 +66,14 @@ export class TaskListPage implements ViewWillEnter {
   private readonly categoryRepository = inject(CategoryRepository);
   private readonly modalController = inject(ModalController);
   private readonly alertController = inject(AlertController);
-  private readonly toastController = inject(ToastController);
+  private readonly feedback = inject(FeedbackService);
   private readonly featureFlags = inject(FeatureFlagsService);
 
   readonly tasks = signal<Task[]>([]);
   readonly categories = signal<Category[]>([]);
+  // Índice id → categoría: cada tarjeta resuelve su categoría en O(1) en vez de recorrer el arreglo
+  // en cada render. Se recalcula solo cuando cambian las categorías.
+  private readonly categoriesById = computed(() => new Map(this.categories().map((category) => [category.id, category])));
   readonly pendingCount = signal(0);
   // Solo es true durante la primera carga; las recargas posteriores no muestran el skeleton.
   readonly loading = signal(true);
@@ -108,7 +111,7 @@ export class TaskListPage implements ViewWillEnter {
 
   // Se ejecuta cada vez que la pestaña vuelve a mostrarse (no solo la primera vez).
   async ionViewWillEnter(): Promise<void> {
-    this.categories.set(await this.categoryRepository.getAll());
+    await this.reloadCategories();
 
     // Si la categoría filtrada se eliminó desde la otra pestaña, se vuelve a "Todas".
     const key = this.categoryKey();
@@ -123,7 +126,7 @@ export class TaskListPage implements ViewWillEnter {
   }
 
   categoryOf(categoryId: number | null): Category | undefined {
-    return this.categories().find((category) => category.id === categoryId);
+    return categoryId === null ? undefined : this.categoriesById().get(categoryId);
   }
 
   async onStatusChange(value: TaskStatusFilter): Promise<void> {
@@ -139,24 +142,37 @@ export class TaskListPage implements ViewWillEnter {
   async onAddTask(): Promise<void> {
     const data = await this.openForm();
     if (data) {
-      await this.taskRepository.create(data);
-      await this.refreshTasks();
-      await this.presentToast('Tarea creada');
+      await this.feedback.attempt(
+        async () => {
+          await this.taskRepository.create(data);
+          await this.refreshTasks();
+        },
+        { success: 'Tarea creada', error: 'No se pudo crear la tarea' },
+      );
     }
   }
 
   async onEditTask(task: Task): Promise<void> {
     const data = await this.openForm(task);
     if (data) {
-      await this.taskRepository.update({ ...task, ...data });
-      await this.refreshTasks();
-      await this.presentToast('Tarea actualizada');
+      await this.feedback.attempt(
+        async () => {
+          await this.taskRepository.update({ ...task, ...data });
+          await this.refreshTasks();
+        },
+        { success: 'Tarea actualizada', error: 'No se pudo actualizar la tarea' },
+      );
     }
   }
 
   async onToggleComplete(task: Task): Promise<void> {
-    await this.taskRepository.setCompleted(task.id, !task.completed);
-    await this.refreshTasks();
+    await this.feedback.attempt(
+      async () => {
+        await this.taskRepository.setCompleted(task.id, !task.completed);
+        await this.refreshTasks();
+      },
+      { error: 'No se pudo actualizar la tarea' },
+    );
   }
 
   async onDeleteTask(task: Task): Promise<void> {
@@ -170,9 +186,13 @@ export class TaskListPage implements ViewWillEnter {
           text: 'Eliminar',
           role: 'destructive',
           handler: async () => {
-            await this.taskRepository.delete(task.id);
-            await this.refreshTasks();
-            await this.presentToast('Tarea eliminada');
+            await this.feedback.attempt(
+              async () => {
+                await this.taskRepository.delete(task.id);
+                await this.refreshTasks();
+              },
+              { success: 'Tarea eliminada', error: 'No se pudo eliminar la tarea' },
+            );
           },
         },
       ],
@@ -183,17 +203,23 @@ export class TaskListPage implements ViewWillEnter {
   /** Infinite scroll: trae la siguiente página a partir de las filas ya cargadas. */
   async onLoadMore(event: InfiniteScrollCustomEvent): Promise<void> {
     const requestId = this.requestId;
-    const page = await this.taskRepository.getByFilter(this.currentFilter(), {
-      limit: PAGE_SIZE,
-      offset: this.tasks().length,
-    });
+    try {
+      const page = await this.taskRepository.getByFilter(this.currentFilter(), {
+        limit: PAGE_SIZE,
+        offset: this.tasks().length,
+      });
 
-    // Si mientras tanto cambió un filtro o se refrescó la lista, esta página ya no aplica.
-    if (requestId === this.requestId) {
-      this.tasks.update((tasks) => [...tasks, ...page]);
-      this.hasMore.set(page.length === PAGE_SIZE);
+      // Si mientras tanto cambió un filtro o se refrescó la lista, esta página ya no aplica.
+      if (requestId === this.requestId) {
+        this.tasks.update((tasks) => [...tasks, ...page]);
+        this.hasMore.set(page.length === PAGE_SIZE);
+      }
+    } catch (error) {
+      await this.feedback.error('No se pudieron cargar más tareas', error);
+    } finally {
+      // Siempre se libera el spinner, incluso si la consulta falló.
+      await event.target.complete();
     }
-    await event.target.complete();
   }
 
   private async openForm(task?: Task): Promise<NewTask | null> {
@@ -209,7 +235,7 @@ export class TaskListPage implements ViewWillEnter {
     const { data, role } = await modal.onWillDismiss();
     // El formulario puede haber creado una categoría nueva (flag category_create_from_task),
     // incluso si luego se canceló la tarea; se recargan para mostrarla en los filtros.
-    this.categories.set(await this.categoryRepository.getAll());
+    await this.reloadCategories();
     return role === 'save' ? data : null;
   }
 
@@ -229,19 +255,35 @@ export class TaskListPage implements ViewWillEnter {
 
   private async fetchTasks(limit: number): Promise<void> {
     const requestId = ++this.requestId;
-    const [tasks, pendingCount] = await Promise.all([
-      this.taskRepository.getByFilter(this.currentFilter(), { limit, offset: 0 }),
-      this.taskRepository.countPending(),
-    ]);
+    try {
+      const [tasks, pendingCount] = await Promise.all([
+        this.taskRepository.getByFilter(this.currentFilter(), { limit, offset: 0 }),
+        this.taskRepository.countPending(),
+      ]);
 
-    // Una consulta más nueva ya está en curso (el usuario cambió de filtro): se descarta esta respuesta.
-    if (requestId !== this.requestId) {
-      return;
+      // Una consulta más nueva ya está en curso (el usuario cambió de filtro): se descarta esta respuesta.
+      if (requestId !== this.requestId) {
+        return;
+      }
+      this.tasks.set(tasks);
+      this.hasMore.set(tasks.length === limit);
+      this.pendingCount.set(pendingCount);
+    } catch (error) {
+      await this.feedback.error('No se pudieron cargar las tareas', error);
+    } finally {
+      // Sin esto, un error en la primera carga dejaría el skeleton visible para siempre.
+      if (requestId === this.requestId) {
+        this.loading.set(false);
+      }
     }
-    this.tasks.set(tasks);
-    this.hasMore.set(tasks.length === limit);
-    this.pendingCount.set(pendingCount);
-    this.loading.set(false);
+  }
+
+  private async reloadCategories(): Promise<void> {
+    try {
+      this.categories.set(await this.categoryRepository.getAll());
+    } catch (error) {
+      await this.feedback.error('No se pudieron cargar las categorías', error);
+    }
   }
 
   private currentFilter(): TaskFilter {
@@ -256,16 +298,5 @@ export class TaskListPage implements ViewWillEnter {
     if (key === 'all') return { type: 'all' };
     if (key === 'none') return { type: 'none' };
     return { type: 'category', categoryId: key };
-  }
-
-  private async presentToast(message: string): Promise<void> {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      position: 'bottom',
-      positionAnchor: 'app-tab-bar',
-      cssClass: 'app-toast',
-    });
-    await toast.present();
   }
 }

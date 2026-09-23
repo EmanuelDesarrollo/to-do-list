@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { IonButton, IonInput, ModalController } from '@ionic/angular';
 
 import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
+import { FeedbackService } from '../../../../core/feedback/feedback.service';
 import { Category, NewCategory } from '../../../categories/domain/models/category.model';
 import { CategoryRepository } from '../../../categories/domain/repositories/category.interface';
 import { CategoryFormComponent } from '../../../categories/presentation/category-form/category-form.component';
@@ -28,6 +29,7 @@ export class TaskFormComponent implements OnInit {
   private readonly modalController = inject(ModalController);
   private readonly categoryRepository = inject(CategoryRepository);
   private readonly featureFlags = inject(FeatureFlagsService);
+  private readonly feedback = inject(FeedbackService);
 
   // Flag de Remote Config: habilita el chip "+ Nueva" en el selector de categoría.
   readonly canCreateCategory = this.featureFlags.categoryFromTask;
@@ -68,9 +70,14 @@ export class TaskFormComponent implements OnInit {
       return;
     }
 
-    const category = await this.categoryRepository.create(data);
-    this.categoryOptions.update((list) => [...list, category]);
-    this.form.controls['categoryId'].setValue(category.id);
+    await this.feedback.attempt(
+      async () => {
+        const category = await this.categoryRepository.create(data);
+        this.categoryOptions.update((list) => [...list, category]);
+        this.form.controls['categoryId'].setValue(category.id);
+      },
+      { success: 'Categoría creada', error: 'No se pudo crear la categoría' },
+    );
   }
 
   save(): void {

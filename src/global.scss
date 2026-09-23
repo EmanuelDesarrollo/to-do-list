@@ -206,3 +206,9 @@ ion-toast.app-toast {
   font-weight: 600;
   text-align: center;
 }
+
+// Variante de error: mismo formato de píldora, con el color danger del tema (claro y oscuro).
+ion-toast.app-toast--error {
+  --background: var(--ion-color-danger);
+  --color: var(--ion-color-danger-contrast);
+}

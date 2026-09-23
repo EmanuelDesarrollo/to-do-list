@@ -14,10 +14,10 @@ import {
   IonList,
   IonToolbar,
   ModalController,
-  ToastController,
   ViewWillEnter,
 } from '@ionic/angular';
 
+import { FeedbackService } from '../../../../core/feedback/feedback.service';
 import { TaskRepository } from '../../../tasks/domain/repositories/task.interface';
 import { AppHeaderComponent } from '../../../../shared/components/app-header/app-header.component';
 import { NEUTRAL_CATEGORY_COLOR } from '../../../../shared/components/color-palette-picker/color-palette-picker.component';
@@ -54,7 +54,7 @@ export class CategoryListPage implements ViewWillEnter {
   private readonly taskRepository = inject(TaskRepository);
   private readonly modalController = inject(ModalController);
   private readonly alertController = inject(AlertController);
-  private readonly toastController = inject(ToastController);
+  private readonly feedback = inject(FeedbackService);
 
   readonly neutralColor = NEUTRAL_CATEGORY_COLOR;
   readonly categories = signal<CategoryWithCount[]>([]);
@@ -80,18 +80,26 @@ export class CategoryListPage implements ViewWillEnter {
   async onAddCategory(): Promise<void> {
     const data = await this.openForm();
     if (data) {
-      await this.categoryRepository.create(data);
-      await this.loadCategories();
-      await this.presentToast('Categoría creada');
+      await this.feedback.attempt(
+        async () => {
+          await this.categoryRepository.create(data);
+          await this.loadCategories();
+        },
+        { success: 'Categoría creada', error: 'No se pudo crear la categoría' },
+      );
     }
   }
 
   async onEditCategory(category: CategoryWithCount): Promise<void> {
     const data = await this.openForm(category);
     if (data) {
-      await this.categoryRepository.update({ id: category.id, ...data });
-      await this.loadCategories();
-      await this.presentToast('Categoría actualizada');
+      await this.feedback.attempt(
+        async () => {
+          await this.categoryRepository.update({ id: category.id, ...data });
+          await this.loadCategories();
+        },
+        { success: 'Categoría actualizada', error: 'No se pudo actualizar la categoría' },
+      );
     }
   }
 
@@ -112,9 +120,13 @@ export class CategoryListPage implements ViewWillEnter {
           role: 'destructive',
           handler: async () => {
             // Las tareas asociadas quedan sin categoría vía ON DELETE SET NULL en SQLite.
-            await this.categoryRepository.delete(category.id);
-            await this.loadCategories();
-            await this.presentToast('Categoría eliminada');
+            await this.feedback.attempt(
+              async () => {
+                await this.categoryRepository.delete(category.id);
+                await this.loadCategories();
+              },
+              { success: 'Categoría eliminada', error: 'No se pudo eliminar la categoría' },
+            );
           },
         },
       ],
@@ -137,23 +149,18 @@ export class CategoryListPage implements ViewWillEnter {
   }
 
   private async loadCategories(): Promise<void> {
-    const [categories, pendingCount] = await Promise.all([
-      this.categoryRepository.getAllWithTaskCount(),
-      this.taskRepository.countPending(),
-    ]);
-    this.categories.set(categories);
-    this.pendingCount.set(pendingCount);
-    this.loading.set(false);
-  }
-
-  private async presentToast(message: string): Promise<void> {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      position: 'bottom',
-      positionAnchor: 'app-tab-bar',
-      cssClass: 'app-toast',
-    });
-    await toast.present();
+    try {
+      const [categories, pendingCount] = await Promise.all([
+        this.categoryRepository.getAllWithTaskCount(),
+        this.taskRepository.countPending(),
+      ]);
+      this.categories.set(categories);
+      this.pendingCount.set(pendingCount);
+    } catch (error) {
+      await this.feedback.error('No se pudieron cargar las categorías', error);
+    } finally {
+      // Sin esto, un error en la primera carga dejaría el skeleton visible para siempre.
+      this.loading.set(false);
+    }
   }
 }
