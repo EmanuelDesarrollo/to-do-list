@@ -1,29 +1,16 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonTitle, IonToolbar, ModalController } from '@ionic/angular';
+import { IonButton, IonInput, ModalController } from '@ionic/angular';
 
 import { Category } from '../../../categories/domain/models/category.model';
 import { CategoryPickerComponent } from '../../../../shared/components/category-picker/category-picker.component';
 import { NewTask, Task } from '../../domain/models/task.model';
 
-
+// Bottom sheet de creación/edición de tarea. Devuelve un NewTask al cerrarse con rol "save".
 @Component({
   selector: 'app-task-form',
   templateUrl: 'task-form.component.html',
-  styleUrls: ['task-form.component.scss'],
-  imports: [
-    ReactiveFormsModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonContent,
-    IonItem,
-    IonInput,
-    IonLabel,
-    CategoryPickerComponent,
-  ],
+  imports: [ReactiveFormsModule, IonButton, IonInput, CategoryPickerComponent],
 })
 export class TaskFormComponent implements OnInit {
   @Input() task?: Task;
@@ -40,7 +27,7 @@ export class TaskFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.formBuilder.group({
-      title: [this.task?.title ?? '', [Validators.required]],
+      title: [this.task?.title ?? '', [Validators.required, Validators.pattern(/\S/)]],
       categoryId: [this.task?.categoryId ?? null],
     });
   }

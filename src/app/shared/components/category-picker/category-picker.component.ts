@@ -1,14 +1,15 @@
 import { Component, Input, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { IonChip, IonIcon, IonLabel } from '@ionic/angular';
 
 import { Category } from '../../../features/categories/domain/models/category.model';
+import { CategoryChipComponent } from '../category-chip/category-chip.component';
 
+/** Selector de categoría para formularios. Incluye "Sin categoría" (valor null). */
 @Component({
   selector: 'app-category-picker',
   templateUrl: 'category-picker.component.html',
   styleUrls: ['category-picker.component.scss'],
-  imports: [IonChip, IonIcon, IonLabel],
+  imports: [CategoryChipComponent],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -42,13 +43,13 @@ export class CategoryPickerComponent implements ControlValueAccessor {
     this.disabled = isDisabled;
   }
 
-  toggle(category: Category): void {
+  select(categoryId: number | null): void {
     if (this.disabled) {
       return;
     }
 
-    this.selectedCategoryId = this.selectedCategoryId === category.id ? null : category.id;
-    this.onChange(this.selectedCategoryId);
+    this.selectedCategoryId = categoryId;
+    this.onChange(categoryId);
     this.onTouched();
   }
 }

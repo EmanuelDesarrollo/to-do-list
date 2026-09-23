@@ -26,12 +26,183 @@
 @import "@ionic/angular/css/flex-utils.css";
 
 /**
- * Ionic Dark Mode
+ * Tipografías del diseño, empaquetadas con la app (funcionan offline en el dispositivo).
+ */
+@import "@fontsource/figtree/400.css";
+@import "@fontsource/figtree/600.css";
+@import "@fontsource/figtree/700.css";
+@import "@fontsource/caprasimo/400.css";
+
+/**
+ * Modo oscuro
  * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
+ * Las dos paletas (claro/oscuro) se definen en theme/variables.scss. El usuario puede
+ * alternarlas manualmente desde el header, por eso no se importa ninguna paleta dark de Ionic.
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* Tipografía display para títulos */
+.app-display {
+  font-family: var(--app-font-display);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* Formularios en bottom sheet (task-form / category-form) */
+ion-modal.app-sheet {
+  --background: var(--ion-background-color);
+  --border-radius: 26px;
+  --height: auto;
+  --handle-background: var(--app-border);
+
+  // Altura automática del sheet: el contenido define el alto (no se usa ion-content).
+  .ion-page {
+    position: relative;
+    display: block;
+    contain: content;
+  }
+
+  // Estilos compartidos por los formularios de tarea y de categoría.
+  .sheet {
+    padding: 18px 22px calc(26px + var(--ion-safe-area-bottom, 0px));
+  }
+
+  h2 {
+    margin: 0 0 16px;
+    font-size: 19px;
+    color: var(--ion-text-color);
+  }
+
+  .field {
+    margin-bottom: 16px;
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--app-muted);
+    }
+  }
+
+  // El borde y el fondo van en un div contenedor: si se ponen en el host de ion-input,
+  // su wrapper interno (con alto mínimo propio) no coincide con el borde.
+  .app-field {
+    background: var(--app-surface);
+    border: 1.5px solid var(--app-border);
+    border-radius: 14px;
+    transition: border-color 0.15s;
+
+    &:focus-within {
+      border-color: var(--ion-color-primary);
+    }
+
+    &:has(ion-input.ion-invalid.ion-touched) {
+      border-color: var(--ion-color-danger);
+    }
+
+    ion-input {
+      --background: transparent;
+      --color: var(--ion-text-color);
+      --placeholder-color: var(--app-muted);
+      --placeholder-opacity: 1;
+      --padding-start: 14px;
+      --padding-end: 14px;
+      --padding-top: 12px;
+      --padding-bottom: 12px;
+      min-height: 0;
+      font-size: 15px;
+    }
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+
+    ion-button {
+      flex: 1;
+      margin: 0;
+      min-height: 46px;
+      --box-shadow: none;
+      font-size: 14.5px;
+      font-weight: 700;
+      text-transform: none;
+    }
+
+    .cancel {
+      --border-color: var(--app-border);
+      --border-width: 1.5px;
+      --color: var(--ion-text-color);
+    }
+  }
+}
+
+/* Diálogo de confirmación (ion-alert) con el estilo del diseño */
+ion-alert.app-confirm {
+  --background: var(--app-surface);
+  --max-width: 290px;
+
+  .alert-wrapper {
+    border-radius: 22px;
+  }
+
+  .alert-head {
+    text-align: start;
+    padding: 24px 24px 0;
+  }
+
+  .alert-title {
+    font-family: var(--app-font-display);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ion-text-color);
+  }
+
+  .alert-message {
+    text-align: start;
+    padding: 6px 24px 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--app-muted);
+  }
+
+  .alert-button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 20px 24px 24px;
+    border: none;
+  }
+
+  button.alert-button {
+    flex: 1;
+    margin: 0;
+    min-height: 42px;
+    border-radius: 999px;
+    border: 1.5px solid var(--app-border);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: none;
+    color: var(--ion-text-color);
+  }
+
+  button.alert-button.alert-button-role-destructive {
+    background: var(--ion-color-danger);
+    border-color: var(--ion-color-danger);
+    color: var(--ion-color-danger-contrast);
+  }
+}
+
+/* Toast en forma de píldora, con colores invertidos respecto al fondo */
+ion-toast.app-toast {
+  --background: var(--ion-text-color);
+  --color: var(--ion-background-color);
+  --border-radius: 999px;
+  --box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  --width: fit-content;
+  --start: 0;
+  --end: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+}

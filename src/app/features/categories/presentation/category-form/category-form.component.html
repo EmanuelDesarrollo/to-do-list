@@ -1,24 +1,26 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="cancel()">Cancelar</ion-button>
-    </ion-buttons>
-    <ion-title>{{ isEditMode ? 'Editar categoría' : 'Nueva categoría' }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button [strong]="true" (click)="save()">Guardar</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<form class="sheet" [formGroup]="form" (ngSubmit)="save()">
+  <h2 class="app-display">{{ isEditMode ? 'Editar categoría' : 'Nueva categoría' }}</h2>
 
-<ion-content class="ion-padding">
-  <form [formGroup]="form">
-    <ion-item>
-      <ion-input label="Nombre" labelPlacement="floating" formControlName="name" placeholder="Ej. Trabajo"></ion-input>
-    </ion-item>
+  <div class="field">
+    <label for="category-name">Nombre</label>
+    <div class="app-field">
+      <ion-input
+        id="category-name"
+        formControlName="name"
+        placeholder="Ej. Mascotas"
+        aria-label="Nombre"
+        enterkeyhint="done"
+      ></ion-input>
+    </div>
+  </div>
 
-    <ion-item lines="none" class="color-item">
-      <label for="category-color">Color</label>
-      <input id="category-color" type="color" formControlName="color" />
-    </ion-item>
-  </form>
-</ion-content>
+  <div class="field">
+    <label>Color</label>
+    <app-color-palette-picker formControlName="color"></app-color-palette-picker>
+  </div>
+
+  <div class="actions">
+    <ion-button shape="round" fill="outline" class="cancel" (click)="cancel()">Cancelar</ion-button>
+    <ion-button shape="round" type="submit" color="secondary">Guardar</ion-button>
+  </div>
+</form>

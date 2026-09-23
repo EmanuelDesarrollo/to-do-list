@@ -1,35 +1,61 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Tareas</ion-title>
-  </ion-toolbar>
-  <ion-toolbar>
-    <ion-select
-      label="Filtrar por categoría"
-      labelPlacement="start"
-      interface="popover"
-      [value]="selectedFilterKey()"
-      (ionChange)="onFilterChange($event.detail.value)"
-    >
-      <ion-select-option value="all">Todas</ion-select-option>
-      <ion-select-option value="none">Sin categoría</ion-select-option>
-      @for (category of categories(); track category.id) {
-        <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
-      }
-    </ion-select>
+    <!-- Contenedor único: el toolbar de iOS acomoda a sus hijos directos en fila. -->
+    <div class="toolbar-stack">
+      <app-header title="To-do-lit" [subtitle]="subtitle()"></app-header>
+
+      <div class="filters">
+        <ion-segment [value]="status()" (ionChange)="onStatusChange($any($event.detail.value))">
+          <ion-segment-button value="all"><ion-label>Todas</ion-label></ion-segment-button>
+          <ion-segment-button value="pending"><ion-label>Pendientes</ion-label></ion-segment-button>
+          <ion-segment-button value="done"><ion-label>Completadas</ion-label></ion-segment-button>
+        </ion-segment>
+
+        <div class="chip-row">
+          <app-category-chip
+            variant="select"
+            label="Todas"
+            color="var(--ion-color-primary)"
+            [selected]="categoryKey() === 'all'"
+            (click)="onCategoryChange('all')"
+          ></app-category-chip>
+          <app-category-chip
+            variant="select"
+            label="Sin categoría"
+            [selected]="categoryKey() === 'none'"
+            (click)="onCategoryChange('none')"
+          ></app-category-chip>
+          @for (category of categories(); track category.id) {
+            <app-category-chip
+              variant="select"
+              [label]="category.name"
+              [color]="category.color"
+              [selected]="categoryKey() === category.id"
+              (click)="onCategoryChange(category.id)"
+            ></app-category-chip>
+          }
+        </div>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content>
   @if (loading()) {
-    <div class="state-container">
-      <ion-spinner></ion-spinner>
-    </div>
+    <app-skeleton-list variant="task"></app-skeleton-list>
   } @else if (tasks().length === 0) {
-    <div class="state-container">
-      <p>No hay tareas para mostrar.</p>
-    </div>
+    <app-empty-state
+      icon="checkbox-outline"
+      [title]="isUnfiltered() ? 'Sin tareas todavía' : 'No hay tareas aquí'"
+      [message]="
+        isUnfiltered() ? 'Agrega tu primera tarea para empezar a organizarte.' : 'Ajusta los filtros o crea una nueva tarea.'
+      "
+      actionLabel="Agregar tarea"
+      (action)="onAddTask()"
+    ></app-empty-state>
   } @else {
-    <ion-list>
+    <!-- @for con track por id: Angular solo re-renderiza las filas que cambian al recargar desde SQLite. -->
+    <ion-list lines="none">
       @for (task of tasks(); track task.id) {
         <app-task-card
           [task]="task"
@@ -43,7 +69,7 @@
   }
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="onAddTask()">
+    <ion-fab-button aria-label="Nueva tarea" (click)="onAddTask()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

@@ -1,3 +1,5 @@
-<ion-chip [style.background]="category.color || 'var(--ion-color-medium)'">
-  <ion-label [style.color]="'#ffffff'">{{ category.name }}</ion-label>
+<ion-chip [class.tag]="variant === 'tag'" [class.select]="variant === 'select'" [class.selected]="selected"
+  [style.--cat-color]="color || neutralColor" [attr.role]="variant === 'select' ? 'button' : null"
+  [attr.aria-pressed]="variant === 'select' ? selected : null">
+  <ion-label>{{ label }}</ion-label>
 </ion-chip>

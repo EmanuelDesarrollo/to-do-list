@@ -1,8 +1,69 @@
-.state-container {
+ion-toolbar {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.toolbar-stack {
+  width: 100%;
+}
+
+.filters {
+  padding: 0 22px 14px;
+}
+
+// Segmento tipo "píldora": el indicador ocupa todo el botón en iOS y en MD.
+ion-segment {
+  --background: var(--app-surface);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+ion-segment-button {
+  --indicator-color: var(--ion-color-primary);
+  --indicator-box-shadow: none;
+  --color: var(--app-muted);
+  --color-checked: var(--ion-color-primary-contrast);
+  --border-radius: 999px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  min-height: 34px;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+
+  &::part(indicator) {
+    height: 100%;
+    padding: 0;
+  }
+
+  &::part(indicator-background) {
+    border-radius: 999px;
+  }
+
+  &::before {
+    display: none;
+  }
+}
+
+.chip-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
-  text-align: center;
-  color: var(--ion-color-medium);
+  gap: 8px;
+  margin: 12px -22px 0;
+  padding: 0 22px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+ion-list {
+  padding: 0 18px 100px;
+  background: transparent;
 }

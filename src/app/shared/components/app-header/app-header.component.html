@@ -1,0 +1,17 @@
+<div class="header">
+  <div class="texts">
+    <h1 class="app-display">{{ title }}</h1>
+    @if (subtitle) {
+      <p>{{ subtitle }}</p>
+    }
+  </div>
+
+  <ion-button
+    class="theme-toggle"
+    shape="round"
+    [attr.aria-label]="theme.dark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+    (click)="theme.toggle()"
+  >
+    <ion-icon slot="icon-only" color="primary" [name]="theme.dark() ? 'sunny-outline' : 'moon-outline'"></ion-icon>
+  </ion-button>
+</div>

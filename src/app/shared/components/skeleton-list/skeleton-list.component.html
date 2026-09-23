@@ -1,0 +1,11 @@
+@for (row of rows; track row) {
+  <div class="row" [class.category]="variant === 'category'" aria-hidden="true">
+    <ion-skeleton-text [animated]="true" class="avatar"></ion-skeleton-text>
+    <div class="lines">
+      <ion-skeleton-text [animated]="true" class="line-main"></ion-skeleton-text>
+      @if (variant === 'task') {
+        <ion-skeleton-text [animated]="true" class="line-sub"></ion-skeleton-text>
+      }
+    </div>
+  </div>
+}

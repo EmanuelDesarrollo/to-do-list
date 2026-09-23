@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { SqliteService } from '../../../core/database/sqlite.service';
-import { Category, NewCategory } from '../domain/models/category.model';
+import { Category, CategoryWithCount, NewCategory } from '../domain/models/category.model';
 import { CategoryRepository } from '../domain/repositories/category.interface';
 
 // Forma cruda de una fila de la tabla "categorias".
@@ -8,6 +8,10 @@ interface CategoryRow {
   id: number;
   nombre: string;
   color: string | null;
+}
+
+interface CategoryWithCountRow extends CategoryRow {
+  total_tareas: number;
 }
 
 /**
@@ -21,6 +25,25 @@ export class CategorySqliteRepository implements CategoryRepository {
     const db = await this.sqliteService.getConnection();
     const result = await db.query('SELECT * FROM categorias ORDER BY nombre ASC;');
     return this.mapRows(result.values);
+  }
+
+  async getAllWithTaskCount(): Promise<CategoryWithCount[]> {
+    const db = await this.sqliteService.getConnection();
+    // LEFT JOIN para incluir también las categorías sin tareas (COUNT(t.id) = 0).
+    // El JOIN usa idx_tareas_categoria, así que no recorre toda la tabla de tareas por cada categoría.
+    const result = await db.query(
+      `SELECT c.id, c.nombre, c.color, COUNT(t.id) AS total_tareas
+       FROM categorias c
+       LEFT JOIN tareas t ON t.categoria_id = c.id
+       GROUP BY c.id
+       ORDER BY c.nombre ASC;`
+    );
+    return ((result.values as CategoryWithCountRow[] | undefined) ?? []).map((row) => ({
+      id: row.id,
+      name: row.nombre,
+      color: row.color,
+      taskCount: row.total_tareas,
+    }));
   }
 
   async create(category: NewCategory): Promise<Category> {

@@ -1,2 +1,103 @@
-// For information on how to create your own theme, please refer to:
+// Tema "To-do-lit": paleta cálida (crema / terracota / oliva) en modo claro y oscuro.
 // https://ionicframework.com/docs/theming/
+//
+// El modo oscuro se activa agregando la clase .ion-palette-dark al <html> (ver ThemeService).
+// No se importa la paleta dark de Ionic porque ambas paletas son propias del diseño y así
+// se evita competir en especificidad con sus selectores.
+
+:root {
+  --ion-font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --app-font-display: 'Caprasimo', Georgia, serif;
+
+  /* Colores de acción */
+  --ion-color-primary: #c67139;
+  --ion-color-primary-rgb: 198, 113, 57;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #ae6332;
+  --ion-color-primary-tint: #cc7f4d;
+  --ion-color-secondary: #7a8a5e;
+  --ion-color-secondary-rgb: 122, 138, 94;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #6b7953;
+  --ion-color-secondary-tint: #87966e;
+  --ion-color-danger: #a8482f;
+  --ion-color-danger-rgb: 168, 72, 47;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #943f29;
+  --ion-color-danger-tint: #b15a44;
+
+  /* Fondo, texto y superficies */
+  --ion-background-color: #f5ead8;
+  --ion-background-color-rgb: 245, 234, 216;
+  --ion-text-color: #201e1d;
+  --ion-text-color-rgb: 32, 30, 29;
+  --ion-toolbar-background: #f5ead8;
+  --ion-tab-bar-background: #ebddc5;
+  --ion-tab-bar-border-color: rgba(32, 30, 29, 0.12);
+  --ion-tab-bar-color: rgba(32, 30, 29, 0.6);
+  --ion-tab-bar-color-selected: #c67139;
+  --ion-item-background: #f5ead8;
+  --ion-border-color: rgba(32, 30, 29, 0.12);
+
+  /* Tokens propios del diseño (no existen en Ionic) */
+  --app-surface: #ebddc5;
+  --app-muted: rgba(32, 30, 29, 0.6);
+  --app-border: rgba(32, 30, 29, 0.12);
+  --app-accent-tint: rgba(198, 113, 57, 0.14);
+  --app-accent2-tint: rgba(122, 138, 94, 0.16);
+  /* Cuánto se aclara (light) u oscurece (dark) el color de una categoría para el fondo de su chip */
+  --app-chip-mix-base: #ffffff;
+  --app-chip-bg-amount: 82%;
+  --app-chip-text-amount: 40%;
+  --app-chip-text-base: #000000;
+}
+
+:root.ion-palette-dark {
+  /* Colores de acción */
+  --ion-color-primary: #df935f;
+  --ion-color-primary-rgb: 223, 147, 95;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #c48154;
+  --ion-color-primary-tint: #e29e6f;
+  --ion-color-secondary: #9db07d;
+  --ion-color-secondary-rgb: 157, 176, 125;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #8a9b6e;
+  --ion-color-secondary-tint: #a7b88a;
+  --ion-color-danger: #d9795e;
+  --ion-color-danger-rgb: 217, 121, 94;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #bf6a53;
+  --ion-color-danger-tint: #dd866e;
+
+  /* Fondo, texto y superficies */
+  --ion-background-color: #1c1815;
+  --ion-background-color-rgb: 28, 24, 21;
+  --ion-text-color: #f5ead8;
+  --ion-text-color-rgb: 245, 234, 216;
+  --ion-toolbar-background: #1c1815;
+  --ion-tab-bar-background: #272220;
+  --ion-tab-bar-border-color: rgba(245, 234, 216, 0.14);
+  --ion-tab-bar-color: rgba(245, 234, 216, 0.62);
+  --ion-tab-bar-color-selected: #df935f;
+  --ion-item-background: #1c1815;
+  --ion-border-color: rgba(245, 234, 216, 0.14);
+
+  /* Tokens propios del diseño (no existen en Ionic) */
+  --app-surface: #272220;
+  --app-muted: rgba(245, 234, 216, 0.62);
+  --app-border: rgba(245, 234, 216, 0.14);
+  --app-accent-tint: rgba(223, 147, 95, 0.2);
+  --app-accent2-tint: rgba(157, 176, 125, 0.2);
+  /* Cuánto se aclara (light) u oscurece (dark) el color de una categoría para el fondo de su chip */
+  --app-chip-mix-base: #000000;
+  --app-chip-bg-amount: 45%;
+  --app-chip-text-amount: 55%;
+  --app-chip-text-base: #ffffff;
+}

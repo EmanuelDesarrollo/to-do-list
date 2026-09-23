@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SqliteService } from '../../../core/database/sqlite.service';
 import { NewTask, Task } from '../domain/models/task.model';
-import { TaskCategoryFilter, TaskRepository } from '../domain/repositories/task.interface';
+import { TaskFilter, TaskRepository } from '../domain/repositories/task.interface';
 
 interface TaskRow {
   id: number;
@@ -18,26 +18,39 @@ interface TaskRow {
 export class TaskSqliteRepository implements TaskRepository {
   private readonly sqliteService = inject(SqliteService);
 
-  async getByFilter(filter: TaskCategoryFilter): Promise<Task[]> {
+  async getByFilter(filter: TaskFilter): Promise<Task[]> {
     const db = await this.sqliteService.getConnection();
 
-    // Aprovechando que usamos SQL hacemos los filtros por el mismo SQL.
-    switch (filter.type) {
-      case 'all': {
-        const result = await db.query('SELECT * FROM tareas ORDER BY fecha_creacion DESC;');
-        return this.mapRows(result.values);
-      }
-      case 'none': {
-        const result = await db.query('SELECT * FROM tareas WHERE categoria_id IS NULL ORDER BY fecha_creacion DESC;');
-        return this.mapRows(result.values);
-      }
-      case 'category': {
-        const result = await db.query('SELECT * FROM tareas WHERE categoria_id = ? ORDER BY fecha_creacion DESC;', [
-          filter.categoryId,
-        ]);
-        return this.mapRows(result.values);
-      }
+    // Los filtros se resuelven en SQL (no con .filter() en memoria) para traer solo las filas
+    // necesarias. Las condiciones se arman dinámicamente y siempre con parámetros "?".
+    const conditions: string[] = [];
+    const params: (number | string)[] = [];
+
+    switch (filter.category.type) {
+      case 'none':
+        conditions.push('categoria_id IS NULL');
+        break;
+      case 'category':
+        // Consulta cubierta por idx_tareas_categoria.
+        conditions.push('categoria_id = ?');
+        params.push(filter.category.categoryId);
+        break;
     }
+
+    if (filter.status !== 'all') {
+      conditions.push('completada = ?');
+      params.push(filter.status === 'done' ? 1 : 0);
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const result = await db.query(`SELECT * FROM tareas ${where} ORDER BY fecha_creacion DESC;`, params);
+    return this.mapRows(result.values);
+  }
+
+  async countPending(): Promise<number> {
+    const db = await this.sqliteService.getConnection();
+    const result = await db.query('SELECT COUNT(*) AS total FROM tareas WHERE completada = 0;');
+    return (result.values?.[0] as { total: number } | undefined)?.total ?? 0;
   }
 
   async create(task: NewTask): Promise<Task> {

@@ -1,37 +1,18 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonInput,
-  IonItem,
-  IonTitle,
-  IonToolbar,
-  ModalController,
-} from '@ionic/angular';
+import { IonButton, IonInput, ModalController } from '@ionic/angular';
 
+import {
+  CATEGORY_PALETTE,
+  ColorPalettePickerComponent,
+} from '../../../../shared/components/color-palette-picker/color-palette-picker.component';
 import { Category, NewCategory } from '../../domain/models/category.model';
 
-const DEFAULT_COLOR = '#3880ff';
-
-/** Modal de creación/edición de categoría. Devuelve un NewCategory al cerrarse con rol "save". */
+/** Bottom sheet de creación/edición de categoría. Devuelve un NewCategory al cerrarse con rol "save". */
 @Component({
   selector: 'app-category-form',
   templateUrl: 'category-form.component.html',
-  styleUrls: ['category-form.component.scss'],
-  imports: [
-    ReactiveFormsModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonContent,
-    IonItem,
-    IonInput,
-  ],
+  imports: [ReactiveFormsModule, IonButton, IonInput, ColorPalettePickerComponent],
 })
 export class CategoryFormComponent implements OnInit {
   @Input() category?: Category;
@@ -47,8 +28,8 @@ export class CategoryFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.formBuilder.group({
-      name: [this.category?.name ?? '', [Validators.required]],
-      color: [this.category?.color ?? DEFAULT_COLOR],
+      name: [this.category?.name ?? '', [Validators.required, Validators.pattern(/\S/)]],
+      color: [this.category?.color ?? CATEGORY_PALETTE[0]],
     });
   }
 

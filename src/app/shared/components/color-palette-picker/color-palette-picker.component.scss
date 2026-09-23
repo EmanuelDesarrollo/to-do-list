@@ -1,0 +1,26 @@
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.swatch {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--swatch-color);
+  // Anillo exterior del color seleccionado, separado del círculo por el color de fondo.
+  border: 3px solid var(--ion-background-color);
+  box-shadow: 0 0 0 0 transparent;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.1s;
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  &.selected {
+    box-shadow: 0 0 0 2.5px var(--swatch-color);
+  }
+}

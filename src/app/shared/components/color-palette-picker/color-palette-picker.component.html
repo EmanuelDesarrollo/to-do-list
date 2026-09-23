@@ -1,0 +1,15 @@
+<div class="swatches" role="radiogroup" aria-label="Color">
+  @for (color of colors; track color) {
+    <button
+      type="button"
+      class="swatch"
+      role="radio"
+      [attr.aria-checked]="color === selectedColor"
+      [attr.aria-label]="color"
+      [class.selected]="color === selectedColor"
+      [style.--swatch-color]="color"
+      [disabled]="disabled"
+      (click)="select(color)"
+    ></button>
+  }
+</div>

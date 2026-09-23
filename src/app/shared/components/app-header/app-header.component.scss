@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 22px 14px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--ion-text-color);
+}
+
+p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--app-muted);
+}
+
+.theme-toggle {
+  --background: var(--app-surface);
+  --background-activated: var(--app-surface);
+  --background-hover: var(--app-surface);
+  --color: var(--ion-color-primary);
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: var(--app-border);
+  --box-shadow: none;
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}

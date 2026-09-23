@@ -10,3 +10,8 @@ export interface NewCategory {
   name: string;
   color: string | null;
 }
+
+// Categoría acompañada del número de tareas que tiene asociadas.
+export interface CategoryWithCount extends Category {
+  taskCount: number;
+}
