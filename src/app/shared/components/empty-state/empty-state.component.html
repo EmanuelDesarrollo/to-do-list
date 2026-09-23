@@ -4,9 +4,9 @@
   </div>
   <h2 class="app-display">{{ title }}</h2>
   @if (message) {
-    <p>{{ message }}</p>
+  <p>{{ message }}</p>
   }
   @if (actionLabel) {
-    <ion-button shape="round" [color]="color" (click)="action.emit()">{{ actionLabel }}</ion-button>
+  <ion-button shape="round" [color]="color" (click)="action.emit()">{{ actionLabel }}</ion-button>
   }
 </div>

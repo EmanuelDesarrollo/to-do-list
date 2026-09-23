@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import {
   AlertController,
   IonContent,
@@ -16,6 +16,7 @@ import {
   ViewWillEnter,
 } from '@ionic/angular';
 
+import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
 import { Category } from '../../../categories/domain/models/category.model';
 import { CategoryRepository } from '../../../categories/domain/repositories/category.interface';
 import { AppHeaderComponent } from '../../../../shared/components/app-header/app-header.component';
@@ -24,7 +25,7 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 import { SkeletonListComponent } from '../../../../shared/components/skeleton-list/skeleton-list.component';
 import { TaskCardComponent } from '../../../../shared/components/task-card/task-card.component';
 import { NewTask, Task } from '../../domain/models/task.model';
-import { TaskCategoryFilter, TaskRepository, TaskStatusFilter } from '../../domain/repositories/task.interface';
+import { TaskCategoryFilter, TaskFilter, TaskRepository, TaskStatusFilter } from '../../domain/repositories/task.interface';
 import { TaskFormComponent } from '../task-form/task-form.component';
 
 // Chip de categoría seleccionado: 'all', 'none' (sin categoría) o el id de una categoría.
@@ -58,6 +59,7 @@ export class TaskListPage implements ViewWillEnter {
   private readonly modalController = inject(ModalController);
   private readonly alertController = inject(AlertController);
   private readonly toastController = inject(ToastController);
+  private readonly featureFlags = inject(FeatureFlagsService);
 
   readonly tasks = signal<Task[]>([]);
   readonly categories = signal<Category[]>([]);
@@ -75,6 +77,20 @@ export class TaskListPage implements ViewWillEnter {
 
   // Distingue "no hay ninguna tarea" de "ninguna tarea coincide con los filtros".
   readonly isUnfiltered = computed(() => this.status() === 'all' && this.categoryKey() === 'all');
+
+  constructor() {
+    // Remote Config puede cambiar el orden en vivo; al cambiar el flag se vuelve a consultar SQLite.
+    // La primera carga la hace ionViewWillEnter, por eso se ignora mientras loading es true.
+    effect(() => {
+      this.featureFlags.completedLast();
+      // untracked: loadTasks lee otros filtros que no deben disparar este effect.
+      untracked(() => {
+        if (!this.loading()) {
+          this.loadTasks();
+        }
+      });
+    });
+  }
 
   // Se ejecuta cada vez que la pestaña vuelve a mostrarse (no solo la primera vez).
   async ionViewWillEnter(): Promise<void> {
@@ -158,11 +174,18 @@ export class TaskListPage implements ViewWillEnter {
     await modal.present();
 
     const { data, role } = await modal.onWillDismiss();
+    // El formulario puede haber creado una categoría nueva (flag category_create_from_task),
+    // incluso si luego se canceló la tarea; se recargan para mostrarla en los filtros.
+    this.categories.set(await this.categoryRepository.getAll());
     return role === 'save' ? data : null;
   }
 
   private async loadTasks(): Promise<void> {
-    const filter = { category: this.buildCategoryFilter(this.categoryKey()), status: this.status() };
+    const filter: TaskFilter = {
+      category: this.buildCategoryFilter(this.categoryKey()),
+      status: this.status(),
+      order: this.featureFlags.completedLast() ? 'pendingFirst' : 'recent',
+    };
     const [tasks, pendingCount] = await Promise.all([
       this.taskRepository.getByFilter(filter),
       this.taskRepository.countPending(),

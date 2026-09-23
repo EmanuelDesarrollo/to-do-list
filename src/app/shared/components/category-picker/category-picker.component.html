@@ -1,18 +1,15 @@
 <div class="chip-wrap">
-  <app-category-chip
-    variant="select"
-    label="Sin categoría"
-    [selected]="selectedCategoryId === null"
-    (click)="select(null)"
-  ></app-category-chip>
+  <app-category-chip variant="select" label="Sin categoría" [selected]="selectedCategoryId() === null"
+    (click)="select(null)"></app-category-chip>
 
   @for (category of categories; track category.id) {
-    <app-category-chip
-      variant="select"
-      [label]="category.name"
-      [color]="category.color"
-      [selected]="selectedCategoryId === category.id"
-      (click)="select(category.id)"
-    ></app-category-chip>
+  <app-category-chip variant="select" [label]="category.name" [color]="category.color"
+    [selected]="selectedCategoryId() === category.id" (click)="select(category.id)"></app-category-chip>
+  }
+
+  <!-- Item que solo aplica si en firebase esta activo. -->
+  @if (allowCreate && !disabled) {
+  <app-category-chip variant="select" label="+ Nueva" color="var(--ion-color-primary)"
+    (click)="create.emit()"></app-category-chip>
   }
 </div>

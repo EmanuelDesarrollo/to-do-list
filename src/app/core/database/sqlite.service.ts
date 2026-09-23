@@ -20,12 +20,19 @@ export class SqliteService {
   }
 
   private async initDatabase(): Promise<SQLiteDBConnection> {
-    const existingConnection = await this.sqlite.isConnection(DATABASE_NAME, false);
-    this.connection = existingConnection.result
-      ? await this.sqlite.retrieveConnection(DATABASE_NAME, false)
-      : await this.sqlite.createConnection(DATABASE_NAME, false, 'no-encryption', DATABASE_VERSION, false);
 
-    await this.connection.open();
+    // Verifica primero la conexión porque al recargar la app estabamos teniendo problemas con recuperar la DB
+    // Al verificar la consistencia de la base de datos no se crea nuevamente la conexión, se recupera l que tenia.
+    const consistent = (await this.sqlite.checkConnectionsConsistency()).result;
+    const existingConnection = (await this.sqlite.isConnection(DATABASE_NAME, false)).result;
+    this.connection =
+      consistent && existingConnection
+        ? await this.sqlite.retrieveConnection(DATABASE_NAME, false)
+        : await this.sqlite.createConnection(DATABASE_NAME, false, 'no-encryption', DATABASE_VERSION, false);
+
+    if (!(await this.connection.isDBOpen()).result) {
+      await this.connection.open();
+    }
 
     // Esto es importante, es la configuración para que funcione el ON DELETE SET NULL
     await this.connection.execute('PRAGMA foreign_keys = ON;');

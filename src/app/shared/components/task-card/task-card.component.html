@@ -1,17 +1,13 @@
 <ion-item-sliding #sliding>
   <ion-item lines="none" button [detail]="false" (click)="edit.emit()">
-    <ion-checkbox
-      slot="start"
-      aria-label="Marcar como completada"
-      [checked]="task.completed"
-      (click)="$event.stopPropagation()"
-      (ionChange)="toggleComplete.emit()"
-    ></ion-checkbox>
+    <ion-checkbox slot="start" aria-label="Marcar como completada" [checked]="task.completed"
+      (click)="$event.stopPropagation()" (ionChange)="toggleComplete.emit()"></ion-checkbox>
 
     <ion-label [class.completed]="task.completed">
       <h2>{{ task.title }}</h2>
       <div class="meta">
-        <app-category-chip [label]="category?.name ?? 'Sin categoría'" [color]="category?.color ?? null"></app-category-chip>
+        <app-category-chip [label]="category?.name ?? 'Sin categoría'"
+          [color]="category?.color ?? null"></app-category-chip>
         <span class="date">{{ createdLabel }}</span>
       </div>
     </ion-label>

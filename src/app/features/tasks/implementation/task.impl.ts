@@ -43,7 +43,10 @@ export class TaskSqliteRepository implements TaskRepository {
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-    const result = await db.query(`SELECT * FROM tareas ${where} ORDER BY fecha_creacion DESC;`, params);
+    // El orden también se delega a SQLite. 'pendingFirst' ordena primero por completada (0 antes que 1)
+    // y luego por fecha; ambas cláusulas son literales fijas, nunca texto del usuario.
+    const orderBy = filter.order === 'pendingFirst' ? 'completada ASC, fecha_creacion DESC' : 'fecha_creacion DESC';
+    const result = await db.query(`SELECT * FROM tareas ${where} ORDER BY ${orderBy};`, params);
     return this.mapRows(result.values);
   }
 

@@ -12,27 +12,13 @@
         </ion-segment>
 
         <div class="chip-row">
-          <app-category-chip
-            variant="select"
-            label="Todas"
-            color="var(--ion-color-primary)"
-            [selected]="categoryKey() === 'all'"
-            (click)="onCategoryChange('all')"
-          ></app-category-chip>
-          <app-category-chip
-            variant="select"
-            label="Sin categoría"
-            [selected]="categoryKey() === 'none'"
-            (click)="onCategoryChange('none')"
-          ></app-category-chip>
+          <app-category-chip variant="select" label="Todas" color="var(--ion-color-primary)"
+            [selected]="categoryKey() === 'all'" (click)="onCategoryChange('all')"></app-category-chip>
+          <app-category-chip variant="select" label="Sin categoría" [selected]="categoryKey() === 'none'"
+            (click)="onCategoryChange('none')"></app-category-chip>
           @for (category of categories(); track category.id) {
-            <app-category-chip
-              variant="select"
-              [label]="category.name"
-              [color]="category.color"
-              [selected]="categoryKey() === category.id"
-              (click)="onCategoryChange(category.id)"
-            ></app-category-chip>
+          <app-category-chip variant="select" [label]="category.name" [color]="category.color"
+            [selected]="categoryKey() === category.id" (click)="onCategoryChange(category.id)"></app-category-chip>
           }
         </div>
       </div>
@@ -42,30 +28,20 @@
 
 <ion-content>
   @if (loading()) {
-    <app-skeleton-list variant="task"></app-skeleton-list>
+  <app-skeleton-list variant="task"></app-skeleton-list>
   } @else if (tasks().length === 0) {
-    <app-empty-state
-      icon="checkbox-outline"
-      [title]="isUnfiltered() ? 'Sin tareas todavía' : 'No hay tareas aquí'"
-      [message]="
+  <app-empty-state icon="checkbox-outline" [title]="isUnfiltered() ? 'Sin tareas todavía' : 'No hay tareas aquí'"
+    [message]="
         isUnfiltered() ? 'Agrega tu primera tarea para empezar a organizarte.' : 'Ajusta los filtros o crea una nueva tarea.'
-      "
-      actionLabel="Agregar tarea"
-      (action)="onAddTask()"
-    ></app-empty-state>
+      " actionLabel="Agregar tarea" (action)="onAddTask()"></app-empty-state>
   } @else {
-    <!-- @for con track por id: Angular solo re-renderiza las filas que cambian al recargar desde SQLite. -->
-    <ion-list lines="none">
-      @for (task of tasks(); track task.id) {
-        <app-task-card
-          [task]="task"
-          [category]="categoryOf(task.categoryId)"
-          (toggleComplete)="onToggleComplete(task)"
-          (edit)="onEditTask(task)"
-          (remove)="onDeleteTask(task)"
-        ></app-task-card>
-      }
-    </ion-list>
+  <!-- @for con track por id: Angular solo re-renderiza las filas que cambian al recargar desde SQLite. -->
+  <ion-list lines="none">
+    @for (task of tasks(); track task.id) {
+    <app-task-card [task]="task" [category]="categoryOf(task.categoryId)" (toggleComplete)="onToggleComplete(task)"
+      (edit)="onEditTask(task)" (remove)="onDeleteTask(task)"></app-task-card>
+    }
+  </ion-list>
   }
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">

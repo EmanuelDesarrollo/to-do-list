@@ -1,10 +1,13 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, forwardRef, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { Category } from '../../../features/categories/domain/models/category.model';
 import { CategoryChipComponent } from '../category-chip/category-chip.component';
 
-/** Selector de categoría para formularios. Incluye "Sin categoría" (valor null). */
+/**
+ * Selector de categoría para formularios. Incluye "Sin categoría" (valor null).
+ * Con allowCreate muestra un chip "+ Nueva" que solo emite `create`; quien lo usa decide cómo crearla.
+ */
 @Component({
   selector: 'app-category-picker',
   templateUrl: 'category-picker.component.html',
@@ -20,15 +23,17 @@ import { CategoryChipComponent } from '../category-chip/category-chip.component'
 })
 export class CategoryPickerComponent implements ControlValueAccessor {
   @Input() categories: Category[] = [];
+  @Input() allowCreate = false;
+  @Output() create = new EventEmitter<void>();
 
-  selectedCategoryId: number | null = null;
+  readonly selectedCategoryId = signal<number | null>(null);
   disabled = false;
 
   private onChange: (value: number | null) => void = () => { };
   private onTouched: () => void = () => { };
 
   writeValue(value: number | null): void {
-    this.selectedCategoryId = value;
+    this.selectedCategoryId.set(value);
   }
 
   registerOnChange(fn: (value: number | null) => void): void {
@@ -48,7 +53,7 @@ export class CategoryPickerComponent implements ControlValueAccessor {
       return;
     }
 
-    this.selectedCategoryId = categoryId;
+    this.selectedCategoryId.set(categoryId);
     this.onChange(categoryId);
     this.onTouched();
   }

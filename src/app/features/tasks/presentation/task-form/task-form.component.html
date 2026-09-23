@@ -4,19 +4,15 @@
   <div class="field">
     <label for="task-title">Título</label>
     <div class="app-field">
-      <ion-input
-        id="task-title"
-        formControlName="title"
-        placeholder="Ej. Pagar la luz"
-        aria-label="Título"
-        enterkeyhint="done"
-      ></ion-input>
+      <ion-input id="task-title" formControlName="title" placeholder="Ej. Pagar la luz" aria-label="Título"
+        enterkeyhint="done"></ion-input>
     </div>
   </div>
 
   <div class="field">
     <label>Categoría</label>
-    <app-category-picker [categories]="categories" formControlName="categoryId"></app-category-picker>
+    <app-category-picker [categories]="categoryOptions()" [allowCreate]="canCreateCategory()"
+      (create)="createCategory()" formControlName="categoryId"></app-category-picker>
   </div>
 
   <div class="actions">

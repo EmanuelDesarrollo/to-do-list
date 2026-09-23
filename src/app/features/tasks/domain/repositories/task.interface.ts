@@ -6,10 +6,14 @@ export type TaskCategoryFilter = { type: 'all' } | { type: 'none' } | { type: 'c
 // Filtro de tareas por estado.
 export type TaskStatusFilter = 'all' | 'pending' | 'done';
 
-// Combinación de ambos filtros; se resuelven juntos en una sola consulta.
+// Orden de la lista: más recientes primero, o pendientes primero (y dentro de cada grupo, más recientes).
+export type TaskOrder = 'recent' | 'pendingFirst';
+
+// Combinación de filtros y orden; se resuelven juntos en una sola consulta.
 export interface TaskFilter {
   category: TaskCategoryFilter;
   status: TaskStatusFilter;
+  order: TaskOrder;
 }
 
 /**
