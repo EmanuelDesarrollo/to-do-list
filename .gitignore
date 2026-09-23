@@ -68,3 +68,7 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Configuración de Firebase: cada entorno descarga la suya desde la consola (ver README)
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist

@@ -226,6 +226,24 @@ npm install
 
 > La app debe ejecutarse en un **emulador o dispositivo**. SQLite se usa a través del plugin nativo, así que `ionic serve` en el navegador no tiene persistencia.
 
+### Configurar Firebase
+
+Los archivos de configuración de Firebase **no están en el repositorio** (están en `.gitignore`). Antes de compilar hay que agregarlos:
+
+1. En la [consola de Firebase](https://console.firebase.google.com/), abre el proyecto (o crea uno) y registra las apps con el identificador `todo.task.app.devebt`:
+   - **Android**: descarga `google-services.json`.
+   - **iOS**: descarga `GoogleService-Info.plist`.
+2. Copia cada archivo en su ruta exacta:
+
+   | Archivo | Ruta |
+   | --- | --- |
+   | `google-services.json` | `android/app/google-services.json` |
+   | `GoogleService-Info.plist` | `ios/App/App/GoogleService-Info.plist` |
+
+3. En **Remote Config**, crea los parámetros booleanos `tasks_completed_last` y `category_create_from_task` (ver [Firebase Remote Config](#firebase-remote-config)) y publica los cambios.
+
+> En iOS el archivo ya está referenciado en el proyecto de Xcode: si falta, el build falla con *"Build input file cannot be found"*. En Android, si falta, la app compila pero Remote Config no se inicializa y los flags quedan en sus valores por defecto.
+
 ### Ejecutar en iOS
 
 ```bash
