@@ -2,7 +2,7 @@
   <ion-toolbar>
     <!-- Contenedor único: el toolbar de iOS acomoda a sus hijos directos en fila. -->
     <div class="toolbar-stack">
-      <app-header title="To-do-lit" [subtitle]="subtitle()"></app-header>
+      <app-header title="App Task" [subtitle]="subtitle()"></app-header>
 
       <div class="filters">
         <ion-segment [value]="status()" (ionChange)="onStatusChange($any($event.detail.value))">
