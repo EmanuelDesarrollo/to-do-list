@@ -1,0 +1,50 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Tareas</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-select
+      label="Filtrar por categoría"
+      labelPlacement="start"
+      interface="popover"
+      [value]="selectedFilterKey()"
+      (ionChange)="onFilterChange($event.detail.value)"
+    >
+      <ion-select-option value="all">Todas</ion-select-option>
+      <ion-select-option value="none">Sin categoría</ion-select-option>
+      @for (category of categories(); track category.id) {
+        <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
+      }
+    </ion-select>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (loading()) {
+    <div class="state-container">
+      <ion-spinner></ion-spinner>
+    </div>
+  } @else if (tasks().length === 0) {
+    <div class="state-container">
+      <p>No hay tareas para mostrar.</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (task of tasks(); track task.id) {
+        <app-task-card
+          [task]="task"
+          [category]="categoryOf(task.categoryId)"
+          (toggleComplete)="onToggleComplete(task)"
+          (edit)="onEditTask(task)"
+          (remove)="onDeleteTask(task)"
+        ></app-task-card>
+      }
+    </ion-list>
+  }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="onAddTask()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

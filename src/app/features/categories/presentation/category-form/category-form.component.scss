@@ -1,0 +1,17 @@
+ion-item {
+  margin-bottom: 8px;
+}
+
+.color-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  input[type='color'] {
+    width: 48px;
+    height: 32px;
+    border: none;
+    background: none;
+    padding: 0;
+  }
+}

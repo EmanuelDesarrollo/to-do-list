@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">Cancelar</ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? 'Editar categoría' : 'Nueva categoría' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [strong]="true" (click)="save()">Guardar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form">
+    <ion-item>
+      <ion-input label="Nombre" labelPlacement="floating" formControlName="name" placeholder="Ej. Trabajo"></ion-input>
+    </ion-item>
+
+    <ion-item lines="none" class="color-item">
+      <label for="category-color">Color</label>
+      <input id="category-color" type="color" formControlName="color" />
+    </ion-item>
+  </form>
+</ion-content>

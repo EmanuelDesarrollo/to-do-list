@@ -1,0 +1,20 @@
+@if (categories.length === 0) {
+  <p class="empty-hint">Aún no hay categorías creadas.</p>
+} @else {
+  <div class="chip-wrap">
+    @for (category of categories; track category.id) {
+      <ion-chip
+        [outline]="selectedCategoryId !== category.id"
+        [style.background]="selectedCategoryId === category.id ? (category.color || 'var(--ion-color-medium)') : 'transparent'"
+        [style.borderColor]="category.color || 'var(--ion-color-medium)'"
+        [style.color]="selectedCategoryId === category.id ? '#ffffff' : (category.color || 'var(--ion-color-medium)')"
+        (click)="toggle(category)"
+      >
+        @if (selectedCategoryId === category.id) {
+          <ion-icon name="checkmark"></ion-icon>
+        }
+        <ion-label>{{ category.name }}</ion-label>
+      </ion-chip>
+    }
+  </div>
+}

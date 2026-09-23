@@ -1,0 +1,15 @@
+.chip-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+ion-chip {
+  margin: 0;
+  cursor: pointer;
+}
+
+.empty-hint {
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+}

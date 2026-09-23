@@ -1,0 +1,9 @@
+ion-label.completed h2 {
+  text-decoration: line-through;
+  color: var(--ion-color-medium);
+}
+
+app-category-chip {
+  display: inline-block;
+  margin-top: 4px;
+}
