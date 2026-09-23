@@ -59,7 +59,7 @@ export class FeatureFlagsService {
     try {
       await this.readFlags();
 
-      // Actualizaciones en tiempo real: el evento solo avisa qué llaves cambiaron,
+      // Actualizaciones en tiempo real: el evento solo avisa qué llaves cambiaron.
       await FirebaseRemoteConfig.addConfigUpdateListener(async (event, error) => {
         if (error || !event) {
           console.warn('[FeatureFlags] Error en actualización en tiempo real', error);
