@@ -21,6 +21,7 @@
     "@angular/router": "22.1.7",
     "@capacitor-community/sqlite": "^8.1.1",
     "@capacitor-firebase/remote-config": "^8.5.2",
+    "@capacitor/android": "^8.5.2",
     "@capacitor/app": "8.1.1",
     "@capacitor/core": "8.5.2",
     "@capacitor/haptics": "8.0.2",
